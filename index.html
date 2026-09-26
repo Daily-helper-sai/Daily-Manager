@@ -336,24 +336,30 @@
     }
 
     // Submit Trip
-    function submitCreateTrip() {
-      const payload = {
-        action: "createTrip",
-        scheduledDate: document.getElementById("tr-date").value,
-        noOfDays: document.getElementById("tr-days").value,
-        clientName: document.getElementById("tr-client").value,
-        clientLocation: document.getElementById("tr-location").value,
-        tripDetails: document.getElementById("tr-details").value
-      };
+   function submitCreateTask() {
+  const payload = {
+    action: "createTask",
+    title: document.getElementById("t-title").value,
+    priority: document.getElementById("t-priority").value,
+    reportedTo: document.getElementById("t-reported").value,
+    assignedTo: document.getElementById("t-assigned").value,
+    mailLink: document.getElementById("t-mail").value,
+    description: document.getElementById("t-desc").value
+  };
 
-      fetch(API_URL, { method: "POST", body: JSON.stringify(payload) })
-        .then(res => res.json())
-        .then(data => {
-          closeModal("create-trip-modal");
-          showPopup("Trip Created & Saved Successfully!");
-          fetchTrips();
-        });
-    }
+  fetch(API_URL, {
+    method: "POST",
+    headers: { "Content-Type": "text/plain;charset=utf-8" },
+    body: JSON.stringify(payload)
+  })
+  .then(res => res.json())
+  .then(data => {
+    closeModal("create-task-modal");
+    showPopup("Task Created & Saved Successfully!");
+    fetchTasks();
+  })
+  .catch(err => console.error("Error submitting task:", err));
+}
 
     // Fetch Trips API
     function fetchTrips() {
