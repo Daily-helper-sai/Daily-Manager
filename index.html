@@ -1,0 +1,395 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Task & Trip Manager</title>
+  <!-- SheetJS for Excel Export -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+  <style>
+    :root {
+      --bg-color: #0a0a0c;
+      --card-bg: #121216;
+      --text-color: #f1f1f1;
+      --text-muted: #a0a0aa;
+      --neon-red: #ff0033;
+      --neon-red-glow: rgba(255, 0, 51, 0.4);
+      --border-color: #22222a;
+      --input-bg: #1a1a22;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+    body { background-color: var(--bg-color); color: var(--text-color); min-height: 100vh; padding: 20px; }
+
+    /* Header */
+    header { display: flex; justify-content: space-between; align-items: center; padding-bottom: 20px; border-bottom: 1px solid var(--border-color); margin-bottom: 30px; }
+    h1 { color: #fff; font-size: 1.8rem; text-transform: uppercase; letter-spacing: 2px; }
+    h1 span { color: var(--neon-red); text-shadow: 0 0 10px var(--neon-red-glow); }
+    .nav-btn { background: transparent; border: 1px solid var(--neon-red); color: var(--text-color); padding: 8px 16px; border-radius: 6px; cursor: pointer; transition: all 0.3s ease; }
+    .nav-btn:hover { background: var(--neon-red); color: #fff; box-shadow: 0 0 15px var(--neon-red-glow); }
+
+    /* Main Grid & Cards */
+    .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 20px; margin-bottom: 30px; }
+    .card { background: var(--card-bg); border: 1px solid var(--border-color); border-radius: 12px; padding: 20px; cursor: pointer; transition: all 0.3s ease; position: relative; overflow: hidden; }
+    .card:hover { border-color: var(--neon-red); box-shadow: 0 0 20px var(--neon-red-glow); transform: translateY(-3px); }
+    .card h3 { font-size: 1.3rem; margin-bottom: 10px; color: #fff; }
+    .card p { color: var(--text-muted); font-size: 0.9rem; }
+    .card.add-card { border: 2px dashed var(--neon-red); text-align: center; display: flex; flex-direction: column; justify-content: center; align-items: center; min-height: 140px; }
+
+    /* Filters Bar */
+    .filter-bar { background: var(--card-bg); border: 1px solid var(--border-color); border-radius: 8px; padding: 15px; margin-bottom: 20px; display: flex; flex-wrap: wrap; gap: 15px; align-items: center; }
+    .filter-group { display: flex; align-items: center; gap: 8px; }
+    label { font-size: 0.85rem; color: var(--text-muted); }
+    select, input { background: var(--input-bg); border: 1px solid var(--border-color); color: #fff; padding: 8px 12px; border-radius: 6px; outline: none; }
+    select:focus, input:focus { border-color: var(--neon-red); box-shadow: 0 0 8px var(--neon-red-glow); }
+
+    /* Buttons */
+    .btn-neon { background: var(--neon-red); border: none; color: #fff; padding: 10px 20px; border-radius: 6px; font-weight: bold; cursor: pointer; transition: all 0.3s ease; box-shadow: 0 0 10px var(--neon-red-glow); }
+    .btn-neon:hover { background: #e0002d; box-shadow: 0 0 20px var(--neon-red-glow); transform: scale(1.02); }
+    .btn-secondary { background: transparent; border: 1px solid var(--text-muted); color: var(--text-muted); padding: 10px 20px; border-radius: 6px; cursor: pointer; }
+    .btn-secondary:hover { border-color: #fff; color: #fff; }
+
+    /* Dynamic Data Tables */
+    .table-container { background: var(--card-bg); border: 1px solid var(--border-color); border-radius: 8px; overflow-x: auto; margin-bottom: 30px; }
+    table { width: 100%; border-collapse: collapse; text-align: left; }
+    th, td { padding: 12px 15px; border-bottom: 1px solid var(--border-color); font-size: 0.9rem; }
+    th { background: #181820; color: var(--text-muted); font-weight: 600; }
+    tr:hover { background: rgba(255, 0, 51, 0.05); }
+
+    /* Expense Display Badge */
+    .metrics-bar { display: flex; gap: 20px; margin-bottom: 20px; }
+    .metric-card { background: var(--card-bg); border-left: 4px solid var(--neon-red); padding: 15px; border-radius: 6px; flex: 1; }
+    .metric-card h4 { color: var(--text-muted); font-size: 0.8rem; margin-bottom: 5px; }
+    .metric-card p { font-size: 1.5rem; font-weight: bold; color: #fff; }
+
+    /* Modal Popups */
+    .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); display: none; justify-content: center; align-items: center; z-index: 1000; backdrop-filter: blur(5px); }
+    .modal { background: var(--card-bg); border: 1px solid var(--neon-red); box-shadow: 0 0 30px var(--neon-red-glow); border-radius: 12px; width: 90%; max-width: 550px; padding: 25px; position: relative; max-height: 90vh; overflow-y: auto; }
+    .modal h2 { margin-bottom: 15px; color: #fff; font-size: 1.4rem; border-bottom: 1px solid var(--border-color); padding-bottom: 10px; }
+    .form-group { margin-bottom: 15px; display: flex; flex-direction: column; gap: 5px; }
+    .form-group input, .form-group select, .form-group textarea { width: 100%; }
+
+    /* Floating Toast Notification */
+    #toast { visibility: hidden; min-width: 250px; background-color: var(--neon-red); color: #fff; text-align: center; border-radius: 8px; padding: 16px; position: fixed; z-index: 2000; right: 30px; bottom: 30px; font-size: 1rem; box-shadow: 0 0 20px var(--neon-red-glow); transition: all 0.5s ease; }
+    #toast.show { visibility: visible; animation: fadein 0.5s, fadeout 0.5s 2.5s; }
+
+    @keyframes fadein { from { bottom: 0; opacity: 0; } to { bottom: 30px; opacity: 1; } }
+    @keyframes fadeout { from { bottom: 30px; opacity: 1; } to { bottom: 0; opacity: 0; } }
+  </style>
+</head>
+<body>
+
+  <!-- Header -->
+  <header>
+    <h1><span>NEON</span> WORKSPACE</h1>
+    <button class="nav-btn" onclick="showSection('dashboard')">Home / Modules</button>
+  </header>
+
+  <!-- Notification Popup Toast -->
+  <div id="toast">Action Completed Successfully</div>
+
+  <!-- SECTION 1: MAIN DASHBOARD -->
+  <main id="dashboard-section">
+    <div class="grid" id="module-grid">
+      <div class="card" onclick="showSection('tasks-section')">
+        <h3>📋 Tasks Module</h3>
+        <p>Daily updates, SLAs, priority assignment & closure tracking.</p>
+      </div>
+      <div class="card" onclick="showSection('trips-section')">
+        <h3>✈️ Trips & Expenses</h3>
+        <p>Schedule travel, upload bills to Drive, claims & expense reports (₹).</p>
+      </div>
+      <div class="card add-card" onclick="openModal('add-module-modal')">
+        <h3>+ Add Module</h3>
+        <p>Extend application capabilities</p>
+      </div>
+    </div>
+  </main>
+
+  <!-- SECTION 2: TASKS MODULE -->
+  <section id="tasks-section" style="display: none;">
+    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;">
+      <h2>Tasks Dashboard</h2>
+      <div>
+        <button class="btn-neon" onclick="openModal('create-task-modal')">+ Create Task</button>
+        <button class="btn-secondary" onclick="exportExcel('tasks-table', 'Tasks_Report')">Export Excel</button>
+      </div>
+    </div>
+
+    <!-- Task Filters -->
+    <div class="filter-bar">
+      <div class="filter-group">
+        <label>F1 Timeframe:</label>
+        <select id="task-f1"><option value="all">All</option><option value="daily">Daily</option><option value="weekly">Weekly</option><option value="monthly">Monthly</option></select>
+      </div>
+      <div class="filter-group">
+        <label>F2 Status:</label>
+        <select id="task-f2"><option value="all">All</option><option value="Open">Open</option><option value="Closed">Closed</option></select>
+      </div>
+      <div class="filter-group">
+        <label>F3 Range:</label>
+        <input type="date" id="task-f3-start"> to <input type="date" id="task-f3-end">
+      </div>
+      <button class="btn-neon" style="padding: 6px 12px;" onclick="fetchTasks()">Apply Filters</button>
+    </div>
+
+    <!-- Task Table -->
+    <div class="table-container">
+      <table id="tasks-table">
+        <thead>
+          <tr>
+            <th>ID</th><th>Title</th><th>Priority</th><th>Date Created</th><th>Assigned To</th><th>Status</th><th>Actions</th>
+          </tr>
+        </thead>
+        <tbody id="task-rows">
+          <!-- Loaded Dynamically -->
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <!-- SECTION 3: TRIPS MODULE -->
+  <section id="trips-section" style="display: none;">
+    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;">
+      <h2>Trips & Expenses Dashboard</h2>
+      <div>
+        <button class="btn-neon" onclick="openModal('create-trip-modal')">+ Create Trip</button>
+        <button class="btn-secondary" onclick="exportExcel('trips-table', 'Trips_Report')">Export Excel</button>
+      </div>
+    </div>
+
+    <!-- Expense Metrics (₹) -->
+    <div class="metrics-bar">
+      <div class="metric-card">
+        <h4>TOTAL EXPENSE (FILTERED)</h4>
+        <p id="total-expense">₹ 0.00</p>
+      </div>
+    </div>
+
+    <!-- Trip Filters -->
+    <div class="filter-bar">
+      <div class="filter-group">
+        <label>F1 Timeframe:</label>
+        <select id="trip-f1"><option value="all">All</option><option value="daily">Daily</option><option value="weekly">Weekly</option><option value="monthly">Monthly</option></select>
+      </div>
+      <div class="filter-group">
+        <label>F2 Status:</label>
+        <select id="trip-f2"><option value="all">All</option><option value="Open">Open</option><option value="Closed">Closed</option><option value="Claimed">Claimed</option></select>
+      </div>
+      <div class="filter-group">
+        <label>F3 Range:</label>
+        <input type="date" id="trip-f3-start"> to <input type="date" id="trip-f3-end">
+      </div>
+      <button class="btn-neon" style="padding: 6px 12px;" onclick="fetchTrips()">Apply Filters</button>
+    </div>
+
+    <!-- Trips Table -->
+    <div class="table-container">
+      <table id="trips-table">
+        <thead>
+          <tr>
+            <th>Trip ID</th><th>Trip Name</th><th>Scheduled Date</th><th>Client</th><th>Status</th><th>Actions</th>
+          </tr>
+        </thead>
+        <tbody id="trip-rows">
+          <!-- Loaded Dynamically -->
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <!-- ================= MODALS & POPUPS ================= -->
+
+  <!-- Modal: Create Task -->
+  <div class="modal-overlay" id="create-task-modal">
+    <div class="modal">
+      <h2>Create New Task</h2>
+      <div class="form-group"><label>Title</label><input type="text" id="t-title"></div>
+      <div class="form-group"><label>Priority</label>
+        <select id="t-priority"><option>P1</option><option>P2</option><option>P3</option><option>P4</option></select>
+      </div>
+      <div class="form-group"><label>Reported To</label><input type="text" id="t-reported"></div>
+      <div class="form-group"><label>Assigned To</label><input type="text" id="t-assigned"></div>
+      <div class="form-group"><label>Mail Link</label><input type="text" id="t-mail"></div>
+      <div class="form-group"><label>Description</label><textarea id="t-desc" rows="3"></textarea></div>
+      <div style="display:flex; justify-content:flex-end; gap:10px;">
+        <button class="btn-secondary" onclick="closeModal('create-task-modal')">Cancel</button>
+        <button class="btn-neon" onclick="submitCreateTask()">Save Task</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal: Create Trip -->
+  <div class="modal-overlay" id="create-trip-modal">
+    <div class="modal">
+      <h2>Create New Trip</h2>
+      <div class="form-group"><label>Scheduled Date</label><input type="date" id="tr-date"></div>
+      <div class="form-group"><label>Number of Days</label><input type="number" id="tr-days"></div>
+      <div class="form-group"><label>Client Name</label><input type="text" id="tr-client"></div>
+      <div class="form-group"><label>Client Location</label><input type="text" id="tr-location"></div>
+      <div class="form-group"><label>Details</label><textarea id="tr-details" rows="3"></textarea></div>
+      <div style="display:flex; justify-content:flex-end; gap:10px;">
+        <button class="btn-secondary" onclick="closeModal('create-trip-modal')">Cancel</button>
+        <button class="btn-neon" onclick="submitCreateTrip()">Save Trip</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal: Extend App Module -->
+  <div class="modal-overlay" id="add-module-modal">
+    <div class="modal">
+      <h2>+ Register New Module</h2>
+      <div class="form-group"><label>Module Title</label><input type="text" id="m-title"></div>
+      <div class="form-group"><label>Description</label><input type="text" id="m-desc"></div>
+      <div style="display:flex; justify-content:flex-end; gap:10px;">
+        <button class="btn-secondary" onclick="closeModal('add-module-modal')">Cancel</button>
+        <button class="btn-neon" onclick="submitNewModule()">Create Module</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- MAIN SCRIPT LOGIC -->
+  <script>
+    // PASTE YOUR GOOGLE APPS SCRIPT API URL HERE
+    const API_URL = "https://script.google.com/macros/s/AKfycbzNoKhYsKUfSswLElIsNcmuI1V9JYwNJJWR6aL0bfSYlIRs3TcX2AKFMEEKYLPquiXn/exec";
+
+    // Toast Popup Trigger
+    function showPopup(message) {
+      const toast = document.getElementById("toast");
+      toast.innerText = message;
+      toast.className = "show";
+      setTimeout(() => { toast.className = toast.className.replace("show", ""); }, 3000);
+    }
+
+    // Modal Display Controls
+    function openModal(id) { document.getElementById(id).style.display = "flex"; }
+    function closeModal(id) { document.getElementById(id).style.display = "none"; }
+
+    // Navigation Switcher
+    function showSection(sectionId) {
+      document.getElementById("dashboard-section").style.display = "none";
+      document.getElementById("tasks-section").style.display = "none";
+      document.getElementById("trips-section").style.display = "none";
+      document.getElementById(sectionId).style.display = "block";
+    }
+
+    // Dynamic Module Generator
+    function submitNewModule() {
+      const title = document.getElementById("m-title").value;
+      const desc = document.getElementById("m-desc").value;
+      if(!title) return;
+
+      const grid = document.getElementById("module-grid");
+      const card = document.createElement("div");
+      card.className = "card";
+      card.innerHTML = `<h3>📦 ${title}</h3><p>${desc}</p>`;
+      card.onclick = () => showPopup(`Module "${title}" loaded successfully!`);
+      
+      grid.insertBefore(card, grid.lastElementChild);
+      closeModal('add-module-modal');
+      showPopup(`New Module "${title}" Created!`);
+    }
+
+    // Submit Task
+    function submitCreateTask() {
+      const payload = {
+        action: "createTask",
+        title: document.getElementById("t-title").value,
+        priority: document.getElementById("t-priority").value,
+        reportedTo: document.getElementById("t-reported").value,
+        assignedTo: document.getElementById("t-assigned").value,
+        mailLink: document.getElementById("t-mail").value,
+        description: document.getElementById("t-desc").value
+      };
+
+      fetch(API_URL, { method: "POST", body: JSON.stringify(payload) })
+        .then(res => res.json())
+        .then(data => {
+          closeModal("create-task-modal");
+          showPopup("Task Created & Saved Successfully!");
+          fetchTasks();
+        });
+    }
+
+    // Fetch Tasks API
+    function fetchTasks() {
+      fetch(`${API_URL}?action=getTasks`)
+        .then(res => res.json())
+        .then(response => {
+          const tbody = document.getElementById("task-rows");
+          tbody.innerHTML = "";
+          response.data.forEach(task => {
+            tbody.innerHTML += `
+              <tr>
+                <td>${task['Task ID']}</td>
+                <td>${task['Task Title']}</td>
+                <td><span style="color:${task['Priority'] === 'P1' ? 'var(--neon-red)' : '#fff'}">${task['Priority']}</span></td>
+                <td>${task['Date Created']}</td>
+                <td>${task['Assigned To']}</td>
+                <td>${task['Status']}</td>
+                <td>
+                  <button class="btn-neon" style="padding:4px 8px; font-size:0.75rem;" onclick="showPopup('Task Closed!')">Close</button>
+                </td>
+              </tr>`;
+          });
+        });
+    }
+
+    // Submit Trip
+    function submitCreateTrip() {
+      const payload = {
+        action: "createTrip",
+        scheduledDate: document.getElementById("tr-date").value,
+        noOfDays: document.getElementById("tr-days").value,
+        clientName: document.getElementById("tr-client").value,
+        clientLocation: document.getElementById("tr-location").value,
+        tripDetails: document.getElementById("tr-details").value
+      };
+
+      fetch(API_URL, { method: "POST", body: JSON.stringify(payload) })
+        .then(res => res.json())
+        .then(data => {
+          closeModal("create-trip-modal");
+          showPopup("Trip Created & Saved Successfully!");
+          fetchTrips();
+        });
+    }
+
+    // Fetch Trips API
+    function fetchTrips() {
+      fetch(`${API_URL}?action=getTrips`)
+        .then(res => res.json())
+        .then(response => {
+          const tbody = document.getElementById("trip-rows");
+          tbody.innerHTML = "";
+          let totalExpense = 0;
+
+          response.bills.forEach(b => totalExpense += Number(b.Amount || 0));
+          document.getElementById("total-expense").innerText = `₹ ${totalExpense.toLocaleString('en-IN')}`;
+
+          response.trips.forEach(trip => {
+            tbody.innerHTML += `
+              <tr>
+                <td>${trip['Trip ID']}</td>
+                <td>${trip['Trip Name']}</td>
+                <td>${trip['Scheduled Date']}</td>
+                <td>${trip['Client Name']}</td>
+                <td>${trip['Status']}</td>
+                <td>
+                  <button class="btn-secondary" style="padding:4px 8px; font-size:0.75rem;" onclick="showPopup('Bills Saved!')">Upload Bills</button>
+                </td>
+              </tr>`;
+          });
+        });
+    }
+
+    // Export Table to Excel
+    function exportExcel(tableID, filename) {
+      const table = document.getElementById(tableID);
+      const wb = XLSX.utils.table_to_book(table, { sheet: "Sheet1" });
+      XLSX.writeFile(wb, `${filename}.xlsx`);
+      showPopup("Excel File Downloaded!");
+    }
+  </script>
+</body>
+</html>
