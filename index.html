@@ -40,19 +40,20 @@
     .filter-bar { background: var(--card-bg); border: 1px solid var(--border-color); border-radius: 8px; padding: 15px; margin-bottom: 20px; display: flex; flex-wrap: wrap; gap: 15px; align-items: center; }
     .filter-group { display: flex; align-items: center; gap: 8px; }
     label { font-size: 0.85rem; color: var(--text-muted); }
-    select, input { background: var(--input-bg); border: 1px solid var(--border-color); color: #fff; padding: 8px 12px; border-radius: 6px; outline: none; }
-    select:focus, input:focus { border-color: var(--neon-red); box-shadow: 0 0 8px var(--neon-red-glow); }
+    select, input, textarea { background: var(--input-bg); border: 1px solid var(--border-color); color: #fff; padding: 8px 12px; border-radius: 6px; outline: none; }
+    select:focus, input:focus, textarea:focus { border-color: var(--neon-red); box-shadow: 0 0 8px var(--neon-red-glow); }
 
     /* Buttons */
-    .btn-neon { background: var(--neon-red); border: none; color: #fff; padding: 10px 20px; border-radius: 6px; font-weight: bold; cursor: pointer; transition: all 0.3s ease; box-shadow: 0 0 10px var(--neon-red-glow); }
+    .btn-neon { background: var(--neon-red); border: none; color: #fff; padding: 8px 16px; border-radius: 6px; font-weight: bold; cursor: pointer; transition: all 0.3s ease; box-shadow: 0 0 10px var(--neon-red-glow); font-size: 0.85rem; }
     .btn-neon:hover { background: #e0002d; box-shadow: 0 0 20px var(--neon-red-glow); transform: scale(1.02); }
-    .btn-secondary { background: transparent; border: 1px solid var(--text-muted); color: var(--text-muted); padding: 10px 20px; border-radius: 6px; cursor: pointer; }
+    .btn-secondary { background: transparent; border: 1px solid var(--text-muted); color: var(--text-muted); padding: 8px 16px; border-radius: 6px; cursor: pointer; font-size: 0.85rem; }
     .btn-secondary:hover { border-color: #fff; color: #fff; }
+    .action-btn-group { display: flex; gap: 6px; }
 
     /* Dynamic Data Tables */
     .table-container { background: var(--card-bg); border: 1px solid var(--border-color); border-radius: 8px; overflow-x: auto; margin-bottom: 30px; }
     table { width: 100%; border-collapse: collapse; text-align: left; }
-    th, td { padding: 12px 15px; border-bottom: 1px solid var(--border-color); font-size: 0.9rem; }
+    th, td { padding: 12px 15px; border-bottom: 1px solid var(--border-color); font-size: 0.88rem; }
     th { background: #181820; color: var(--text-muted); font-weight: 600; }
     tr:hover { background: rgba(255, 0, 51, 0.05); }
 
@@ -69,8 +70,8 @@
     .form-group { margin-bottom: 15px; display: flex; flex-direction: column; gap: 5px; }
     .form-group input, .form-group select, .form-group textarea { width: 100%; }
 
-    /* Floating Toast Notification */
-    #toast { visibility: hidden; min-width: 250px; background-color: var(--neon-red); color: #fff; text-align: center; border-radius: 8px; padding: 16px; position: fixed; z-index: 2000; right: 30px; bottom: 30px; font-size: 1rem; box-shadow: 0 0 20px var(--neon-red-glow); transition: all 0.5s ease; }
+    /* Toast Notification */
+    #toast { visibility: hidden; min-width: 250px; background-color: var(--neon-red); color: #fff; text-align: center; border-radius: 8px; padding: 14px; position: fixed; z-index: 2000; right: 30px; bottom: 30px; font-size: 0.95rem; box-shadow: 0 0 20px var(--neon-red-glow); transition: all 0.5s ease; }
     #toast.show { visibility: visible; animation: fadein 0.5s, fadeout 0.5s 2.5s; }
 
     @keyframes fadein { from { bottom: 0; opacity: 0; } to { bottom: 30px; opacity: 1; } }
@@ -110,27 +111,27 @@
   <section id="tasks-section" style="display: none;">
     <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;">
       <h2>Tasks Dashboard</h2>
-      <div>
+      <div style="display:flex; gap:10px;">
         <button class="btn-neon" onclick="openModal('create-task-modal')">+ Create Task</button>
         <button class="btn-secondary" onclick="exportExcel('tasks-table', 'Tasks_Report')">Export Excel</button>
       </div>
     </div>
 
-    <!-- Task Filters -->
+    <!-- Task Filters (F1, F2, F3) -->
     <div class="filter-bar">
       <div class="filter-group">
         <label>F1 Timeframe:</label>
-        <select id="task-f1"><option value="all">All</option><option value="daily">Daily</option><option value="weekly">Weekly</option><option value="monthly">Monthly</option></select>
+        <select id="task-f1" onchange="filterTasks()"><option value="all">All</option><option value="daily">Daily</option><option value="weekly">Weekly</option><option value="monthly">Monthly</option></select>
       </div>
       <div class="filter-group">
         <label>F2 Status:</label>
-        <select id="task-f2"><option value="all">All</option><option value="Open">Open</option><option value="Closed">Closed</option></select>
+        <select id="task-f2" onchange="filterTasks()"><option value="all">All</option><option value="Open">Open</option><option value="Closed">Closed</option></select>
       </div>
       <div class="filter-group">
         <label>F3 Range:</label>
-        <input type="date" id="task-f3-start"> to <input type="date" id="task-f3-end">
+        <input type="date" id="task-f3-start" onchange="filterTasks()"> to <input type="date" id="task-f3-end" onchange="filterTasks()">
       </div>
-      <button class="btn-neon" style="padding: 6px 12px;" onclick="fetchTasks()">Apply Filters</button>
+      <button class="btn-secondary" style="padding: 6px 12px;" onclick="fetchTasks()">Refresh</button>
     </div>
 
     <!-- Task Table -->
@@ -138,11 +139,11 @@
       <table id="tasks-table">
         <thead>
           <tr>
-            <th>ID</th><th>Title</th><th>Priority</th><th>Date Created</th><th>Assigned To</th><th>Status</th><th>Actions</th>
+            <th>Task ID</th><th>Title</th><th>Priority</th><th>Date Created</th><th>Assigned To</th><th>Status</th><th>Actions</th>
           </tr>
         </thead>
         <tbody id="task-rows">
-          <!-- Loaded Dynamically -->
+          <tr><td colspan="7" style="text-align:center; color: var(--text-muted);">Loading tasks...</td></tr>
         </tbody>
       </table>
     </div>
@@ -152,7 +153,7 @@
   <section id="trips-section" style="display: none;">
     <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;">
       <h2>Trips & Expenses Dashboard</h2>
-      <div>
+      <div style="display:flex; gap:10px;">
         <button class="btn-neon" onclick="openModal('create-trip-modal')">+ Create Trip</button>
         <button class="btn-secondary" onclick="exportExcel('trips-table', 'Trips_Report')">Export Excel</button>
       </div>
@@ -166,21 +167,21 @@
       </div>
     </div>
 
-    <!-- Trip Filters -->
+    <!-- Trip Filters (F1, F2, F3) -->
     <div class="filter-bar">
       <div class="filter-group">
         <label>F1 Timeframe:</label>
-        <select id="trip-f1"><option value="all">All</option><option value="daily">Daily</option><option value="weekly">Weekly</option><option value="monthly">Monthly</option></select>
+        <select id="trip-f1" onchange="filterTrips()"><option value="all">All</option><option value="daily">Daily</option><option value="weekly">Weekly</option><option value="monthly">Monthly</option></select>
       </div>
       <div class="filter-group">
         <label>F2 Status:</label>
-        <select id="trip-f2"><option value="all">All</option><option value="Open">Open</option><option value="Closed">Closed</option><option value="Claimed">Claimed</option></select>
+        <select id="trip-f2" onchange="filterTrips()"><option value="all">All</option><option value="Open">Open</option><option value="Closed">Closed</option><option value="Claimed">Claimed</option></select>
       </div>
       <div class="filter-group">
         <label>F3 Range:</label>
-        <input type="date" id="trip-f3-start"> to <input type="date" id="trip-f3-end">
+        <input type="date" id="trip-f3-start" onchange="filterTrips()"> to <input type="date" id="trip-f3-end" onchange="filterTrips()">
       </div>
-      <button class="btn-neon" style="padding: 6px 12px;" onclick="fetchTrips()">Apply Filters</button>
+      <button class="btn-secondary" style="padding: 6px 12px;" onclick="fetchTrips()">Refresh</button>
     </div>
 
     <!-- Trips Table -->
@@ -192,7 +193,7 @@
           </tr>
         </thead>
         <tbody id="trip-rows">
-          <!-- Loaded Dynamically -->
+          <tr><td colspan="6" style="text-align:center; color: var(--text-muted);">Loading trips...</td></tr>
         </tbody>
       </table>
     </div>
@@ -200,7 +201,7 @@
 
   <!-- ================= MODALS & POPUPS ================= -->
 
-  <!-- Modal: Create Task -->
+  <!-- Modal 1: Create Task -->
   <div class="modal-overlay" id="create-task-modal">
     <div class="modal">
       <h2>Create New Task</h2>
@@ -210,7 +211,7 @@
       </div>
       <div class="form-group"><label>Reported To</label><input type="text" id="t-reported"></div>
       <div class="form-group"><label>Assigned To</label><input type="text" id="t-assigned"></div>
-      <div class="form-group"><label>Mail Link</label><input type="text" id="t-mail"></div>
+      <div class="form-group"><label>Attach Mail Link</label><input type="text" id="t-mail"></div>
       <div class="form-group"><label>Description</label><textarea id="t-desc" rows="3"></textarea></div>
       <div style="display:flex; justify-content:flex-end; gap:10px;">
         <button class="btn-secondary" onclick="closeModal('create-task-modal')">Cancel</button>
@@ -219,7 +220,34 @@
     </div>
   </div>
 
-  <!-- Modal: Create Trip -->
+  <!-- Modal 2: Review / Update Task -->
+  <div class="modal-overlay" id="review-task-modal">
+    <div class="modal">
+      <h2>Review & Update Task</h2>
+      <input type="hidden" id="review-task-id">
+      <div class="form-group"><label>Date Modified</label><input type="date" id="review-date-modified"></div>
+      <div class="form-group"><label>Progress Update Note</label><textarea id="review-update-note" rows="4"></textarea></div>
+      <div style="display:flex; justify-content:flex-end; gap:10px;">
+        <button class="btn-secondary" onclick="closeModal('review-task-modal')">Cancel</button>
+        <button class="btn-neon" onclick="submitReviewTask()">Save Update</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal 3: Close Task -->
+  <div class="modal-overlay" id="close-task-modal">
+    <div class="modal">
+      <h2>Close Task</h2>
+      <input type="hidden" id="close-task-id">
+      <div class="form-group"><label>Mandatory Closure Line</label><textarea id="close-task-line" rows="3" placeholder="Provide final resolution comments..."></textarea></div>
+      <div style="display:flex; justify-content:flex-end; gap:10px;">
+        <button class="btn-secondary" onclick="closeModal('close-task-modal')">Cancel</button>
+        <button class="btn-neon" onclick="submitCloseTask()">Confirm Closure</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal 4: Create Trip -->
   <div class="modal-overlay" id="create-trip-modal">
     <div class="modal">
       <h2>Create New Trip</h2>
@@ -235,7 +263,51 @@
     </div>
   </div>
 
-  <!-- Modal: Extend App Module -->
+  <!-- Modal 5: Upload Trip Bill -->
+  <div class="modal-overlay" id="upload-bill-modal">
+    <div class="modal">
+      <h2>Upload Trip Bill</h2>
+      <input type="hidden" id="bill-trip-id">
+      <input type="hidden" id="bill-trip-name">
+      <div class="form-group"><label>Bill Name</label><input type="text" id="b-name" placeholder="e.g. Flight Receipt"></div>
+      <div class="form-group"><label>Purpose</label><input type="text" id="b-purpose" placeholder="e.g. Travel to Client Site"></div>
+      <div class="form-group"><label>Amount (₹)</label><input type="number" id="b-amount" placeholder="0.00"></div>
+      <div class="form-group"><label>Select Receipt File</label><input type="file" id="b-file"></div>
+      <div style="display:flex; justify-content:flex-end; gap:10px;">
+        <button class="btn-secondary" onclick="closeModal('upload-bill-modal')">Cancel</button>
+        <button class="btn-neon" id="upload-bill-btn" onclick="submitUploadBill()">Upload & Save</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal 6: Close Trip (Followups) -->
+  <div class="modal-overlay" id="close-trip-modal">
+    <div class="modal">
+      <h2>Close Trip</h2>
+      <input type="hidden" id="close-trip-id">
+      <input type="hidden" id="close-trip-name">
+      <div class="form-group"><label>Follow-up Actions (Creates standard Task entries automatically)</label><textarea id="close-trip-followups" rows="3" placeholder="Enter follow-up items..."></textarea></div>
+      <div style="display:flex; justify-content:flex-end; gap:10px;">
+        <button class="btn-secondary" onclick="closeModal('close-trip-modal')">Cancel</button>
+        <button class="btn-neon" onclick="submitCloseTrip()">Close Trip</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal 7: Claim Trip -->
+  <div class="modal-overlay" id="claim-trip-modal">
+    <div class="modal">
+      <h2>Claim Trip</h2>
+      <input type="hidden" id="claim-trip-id">
+      <div class="form-group"><label>Attach Claim Approval Mail Link</label><input type="text" id="claim-mail-link" placeholder="https://mail.google.com/..."></div>
+      <div style="display:flex; justify-content:flex-end; gap:10px;">
+        <button class="btn-secondary" onclick="closeModal('claim-trip-modal')">Cancel</button>
+        <button class="btn-neon" onclick="submitClaimTrip()">Confirm Claim</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal 8: Add New Module -->
   <div class="modal-overlay" id="add-module-modal">
     <div class="modal">
       <h2>+ Register New Module</h2>
@@ -250,8 +322,13 @@
 
   <!-- MAIN SCRIPT LOGIC -->
   <script>
-    // PASTE YOUR GOOGLE APPS SCRIPT API URL HERE
-    const API_URL = "https://script.google.com/macros/s/AKfycbzNoKhYsKUfSswLElIsNcmuI1V9JYwNJJWR6aL0bfSYlIRs3TcX2AKFMEEKYLPquiXn/exec";
+    // PASTE YOUR GOOGLE APPS SCRIPT API EXEC URL HERE
+    const API_URL = "https://script.google.com/macros/s/AKfycbzNoKhYsKUfSswLElIsNcmuI1V9JYwNJJWR6aL0bfSYlIRs3TcX2AKFMEEKYLPquiXn/exec;
+
+    // In-memory data store for client-side filtering
+    let rawTasks = [];
+    let rawTrips = [];
+    let rawBills = [];
 
     // Toast Popup Trigger
     function showPopup(message) {
@@ -271,9 +348,12 @@
       document.getElementById("tasks-section").style.display = "none";
       document.getElementById("trips-section").style.display = "none";
       document.getElementById(sectionId).style.display = "block";
+
+      if(sectionId === 'tasks-section') fetchTasks();
+      if(sectionId === 'trips-section') fetchTrips();
     }
 
-    // Dynamic Module Generator
+    // Dynamic Module Extension
     function submitNewModule() {
       const title = document.getElementById("m-title").value;
       const desc = document.getElementById("m-desc").value;
@@ -287,10 +367,20 @@
       
       grid.insertBefore(card, grid.lastElementChild);
       closeModal('add-module-modal');
-      showPopup(`New Module "${title}" Created!`);
+      showPopup(`New Module "${title}" Registered!`);
     }
 
-    // Submit Task
+    // API Helper: Sends POST payload using plain text to prevent CORS options preflight blocks
+    function apiPost(payload) {
+      return fetch(API_URL, {
+        method: "POST",
+        headers: { "Content-Type": "text/plain;charset=utf-8" },
+        body: JSON.stringify(payload)
+      }).then(res => res.json());
+    }
+
+    // ================= TASK MODULE LOGIC =================
+
     function submitCreateTask() {
       const payload = {
         action: "createTask",
@@ -302,97 +392,323 @@
         description: document.getElementById("t-desc").value
       };
 
-      fetch(API_URL, { method: "POST", body: JSON.stringify(payload) })
-        .then(res => res.json())
-        .then(data => {
-          closeModal("create-task-modal");
-          showPopup("Task Created & Saved Successfully!");
-          fetchTasks();
-        });
+      apiPost(payload).then(data => {
+        closeModal("create-task-modal");
+        showPopup("Task Created & Saved!");
+        fetchTasks();
+      }).catch(err => console.error("Error saving task:", err));
     }
 
-    // Fetch Tasks API
     function fetchTasks() {
       fetch(`${API_URL}?action=getTasks`)
         .then(res => res.json())
         .then(response => {
-          const tbody = document.getElementById("task-rows");
-          tbody.innerHTML = "";
-          response.data.forEach(task => {
-            tbody.innerHTML += `
-              <tr>
-                <td>${task['Task ID']}</td>
-                <td>${task['Task Title']}</td>
-                <td><span style="color:${task['Priority'] === 'P1' ? 'var(--neon-red)' : '#fff'}">${task['Priority']}</span></td>
-                <td>${task['Date Created']}</td>
-                <td>${task['Assigned To']}</td>
-                <td>${task['Status']}</td>
-                <td>
-                  <button class="btn-neon" style="padding:4px 8px; font-size:0.75rem;" onclick="showPopup('Task Closed!')">Close</button>
-                </td>
-              </tr>`;
-          });
-        });
+          if (response.status === "success") {
+            rawTasks = response.data || [];
+            filterTasks();
+          }
+        })
+        .catch(err => console.error("Error fetching tasks:", err));
     }
 
-    // Submit Trip
-   function submitCreateTask() {
-  const payload = {
-    action: "createTask",
-    title: document.getElementById("t-title").value,
-    priority: document.getElementById("t-priority").value,
-    reportedTo: document.getElementById("t-reported").value,
-    assignedTo: document.getElementById("t-assigned").value,
-    mailLink: document.getElementById("t-mail").value,
-    description: document.getElementById("t-desc").value
-  };
+    function filterTasks() {
+      const f1 = document.getElementById("task-f1").value;
+      const f2 = document.getElementById("task-f2").value;
+      const f3Start = document.getElementById("task-f3-start").value;
+      const f3End = document.getElementById("task-f3-end").value;
 
-  fetch(API_URL, {
-    method: "POST",
-    headers: { "Content-Type": "text/plain;charset=utf-8" },
-    body: JSON.stringify(payload)
-  })
-  .then(res => res.json())
-  .then(data => {
-    closeModal("create-task-modal");
-    showPopup("Task Created & Saved Successfully!");
-    fetchTasks();
-  })
-  .catch(err => console.error("Error submitting task:", err));
-}
+      const filtered = rawTasks.filter(task => {
+        const createdDate = new Date(task['Date Created']);
+        const now = new Date();
+        
+        // F1 Timeframe
+        if (f1 === 'daily' && createdDate.toDateString() !== now.toDateString()) return false;
+        if (f1 === 'weekly' && (now - createdDate) > 7 * 24 * 60 * 60 * 1000) return false;
+        if (f1 === 'monthly' && (createdDate.getMonth() !== now.getMonth() || createdDate.getFullYear() !== now.getFullYear())) return false;
 
-    // Fetch Trips API
+        // F2 Status
+        if (f2 !== 'all' && task['Status'] !== f2) return false;
+
+        // F3 Range
+        if (f3Start && new Date(task['Date Created']) < new Date(f3Start)) return false;
+        if (f3End && new Date(task['Date Created']) > new Date(f3End)) return false;
+
+        return true;
+      });
+
+      renderTasksTable(filtered);
+    }
+
+    function renderTasksTable(tasks) {
+      const tbody = document.getElementById("task-rows");
+      tbody.innerHTML = "";
+
+      if(tasks.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="7" style="text-align:center; color:var(--text-muted);">No matching tasks found.</td></tr>';
+        return;
+      }
+
+      tasks.forEach(task => {
+        const taskId = task['Task ID'];
+        const isClosed = task['Status'] === 'Closed';
+        tbody.innerHTML += `
+          <tr>
+            <td>${taskId}</td>
+            <td>${task['Task Title'] || ''}</td>
+            <td><span style="color:${task['Priority'] === 'P1' ? 'var(--neon-red)' : '#fff'}">${task['Priority'] || ''}</span></td>
+            <td>${task['Date Created'] ? new Date(task['Date Created']).toLocaleDateString() : ''}</td>
+            <td>${task['Assigned To'] || ''}</td>
+            <td><strong style="color:${isClosed ? 'var(--text-muted)' : 'var(--neon-red)'}">${task['Status'] || ''}</strong></td>
+            <td>
+              ${isClosed ? '<span style="color:var(--text-muted)">Closed</span>' : `
+                <div class="action-btn-group">
+                  <button class="btn-secondary" onclick="openReviewTaskModal('${taskId}')">Review</button>
+                  <button class="btn-neon" onclick="openCloseTaskModal('${taskId}')">Close</button>
+                </div>
+              `}
+            </td>
+          </tr>`;
+      });
+    }
+
+    function openReviewTaskModal(taskId) {
+      document.getElementById("review-task-id").value = taskId;
+      document.getElementById("review-date-modified").value = new Date().toISOString().split('T')[0];
+      document.getElementById("review-update-note").value = "";
+      openModal("review-task-modal");
+    }
+
+    function submitReviewTask() {
+      const payload = {
+        action: "updateTask",
+        taskId: document.getElementById("review-task-id").value,
+        dateModified: document.getElementById("review-date-modified").value,
+        updateNote: document.getElementById("review-update-note").value
+      };
+
+      apiPost(payload).then(data => {
+        closeModal("review-task-modal");
+        showPopup("Task Update Saved!");
+        fetchTasks();
+      });
+    }
+
+    function openCloseTaskModal(taskId) {
+      document.getElementById("close-task-id").value = taskId;
+      document.getElementById("close-task-line").value = "";
+      openModal("close-task-modal");
+    }
+
+    function submitCloseTask() {
+      const payload = {
+        action: "closeTask",
+        taskId: document.getElementById("close-task-id").value,
+        closureLine: document.getElementById("close-task-line").value
+      };
+
+      apiPost(payload).then(data => {
+        closeModal("close-task-modal");
+        showPopup("Task Closed!");
+        fetchTasks();
+      });
+    }
+
+    // ================= TRIPS MODULE LOGIC =================
+
+    function submitCreateTrip() {
+      const payload = {
+        action: "createTrip",
+        scheduledDate: document.getElementById("tr-date").value,
+        noOfDays: document.getElementById("tr-days").value,
+        clientName: document.getElementById("tr-client").value,
+        clientLocation: document.getElementById("tr-location").value,
+        tripDetails: document.getElementById("tr-details").value
+      };
+
+      apiPost(payload).then(data => {
+        closeModal("create-trip-modal");
+        showPopup("Trip Created & Saved!");
+        fetchTrips();
+      }).catch(err => console.error("Error creating trip:", err));
+    }
+
     function fetchTrips() {
       fetch(`${API_URL}?action=getTrips`)
         .then(res => res.json())
         .then(response => {
-          const tbody = document.getElementById("trip-rows");
-          tbody.innerHTML = "";
-          let totalExpense = 0;
-
-          response.bills.forEach(b => totalExpense += Number(b.Amount || 0));
-          document.getElementById("total-expense").innerText = `₹ ${totalExpense.toLocaleString('en-IN')}`;
-
-          response.trips.forEach(trip => {
-            tbody.innerHTML += `
-              <tr>
-                <td>${trip['Trip ID']}</td>
-                <td>${trip['Trip Name']}</td>
-                <td>${trip['Scheduled Date']}</td>
-                <td>${trip['Client Name']}</td>
-                <td>${trip['Status']}</td>
-                <td>
-                  <button class="btn-secondary" style="padding:4px 8px; font-size:0.75rem;" onclick="showPopup('Bills Saved!')">Upload Bills</button>
-                </td>
-              </tr>`;
-          });
-        });
+          if (response.status === "success") {
+            rawTrips = response.trips || [];
+            rawBills = response.bills || [];
+            filterTrips();
+          }
+        })
+        .catch(err => console.error("Error fetching trips:", err));
     }
 
-    // Export Table to Excel
+    function filterTrips() {
+      const f1 = document.getElementById("trip-f1").value;
+      const f2 = document.getElementById("trip-f2").value;
+      const f3Start = document.getElementById("trip-f3-start").value;
+      const f3End = document.getElementById("trip-f3-end").value;
+
+      const filteredTrips = rawTrips.filter(trip => {
+        const scheduledDate = new Date(trip['Scheduled Date']);
+        const now = new Date();
+
+        // F1 Timeframe
+        if (f1 === 'daily' && scheduledDate.toDateString() !== now.toDateString()) return false;
+        if (f1 === 'weekly' && (now - scheduledDate) > 7 * 24 * 60 * 60 * 1000) return false;
+        if (f1 === 'monthly' && (scheduledDate.getMonth() !== now.getMonth() || scheduledDate.getFullYear() !== now.getFullYear())) return false;
+
+        // F2 Status
+        if (f2 !== 'all' && trip['Status'] !== f2) return false;
+
+        // F3 Range
+        if (f3Start && new Date(trip['Scheduled Date']) < new Date(f3Start)) return false;
+        if (f3End && new Date(trip['Scheduled Date']) > new Date(f3End)) return false;
+
+        return true;
+      });
+
+      // Calculate Total Filtered Expense (₹)
+      const filteredTripIds = filteredTrips.map(t => t['Trip ID']);
+      let totalExpense = 0;
+      rawBills.forEach(b => {
+        if (filteredTripIds.includes(b['Trip ID'])) {
+          totalExpense += Number(b['Amount'] || 0);
+        }
+      });
+      document.getElementById("total-expense").innerText = `₹ ${totalExpense.toLocaleString('en-IN', { minimumFractionDigits: 2 })}`;
+
+      renderTripsTable(filteredTrips);
+    }
+
+    function renderTripsTable(trips) {
+      const tbody = document.getElementById("trip-rows");
+      tbody.innerHTML = "";
+
+      if(trips.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="6" style="text-align:center; color:var(--text-muted);">No matching trips found.</td></tr>';
+        return;
+      }
+
+      trips.forEach(trip => {
+        const tripId = trip['Trip ID'];
+        const tripName = trip['Trip Name'];
+        const status = trip['Status'];
+
+        tbody.innerHTML += `
+          <tr>
+            <td>${tripId}</td>
+            <td>${tripName || ''}</td>
+            <td>${trip['Scheduled Date'] ? new Date(trip['Scheduled Date']).toLocaleDateString() : ''}</td>
+            <td>${trip['Client Name'] || ''}</td>
+            <td><strong style="color:${status === 'Claimed' ? '#00ff66' : status === 'Closed' ? 'var(--text-muted)' : 'var(--neon-red)'}">${status || ''}</strong></td>
+            <td>
+              <div class="action-btn-group">
+                <button class="btn-secondary" onclick="openUploadBillModal('${tripId}', '${tripName}')">Upload Bills</button>
+                ${status === 'Open' ? `<button class="btn-secondary" onclick="openCloseTripModal('${tripId}', '${tripName}')">Close</button>` : ''}
+                ${status === 'Closed' ? `<button class="btn-neon" onclick="openClaimTripModal('${tripId}')">Claim</button>` : ''}
+              </div>
+            </td>
+          </tr>`;
+      });
+    }
+
+    function openUploadBillModal(tripId, tripName) {
+      document.getElementById("bill-trip-id").value = tripId;
+      document.getElementById("bill-trip-name").value = tripName;
+      document.getElementById("b-name").value = "";
+      document.getElementById("b-purpose").value = "";
+      document.getElementById("b-amount").value = "";
+      document.getElementById("b-file").value = "";
+      openModal("upload-bill-modal");
+    }
+
+    function submitUploadBill() {
+      const fileInput = document.getElementById("b-file");
+      if(fileInput.files.length === 0) {
+        alert("Please select a bill file to upload.");
+        return;
+      }
+
+      const file = fileInput.files[0];
+      const reader = new FileReader();
+      const btn = document.getElementById("upload-bill-btn");
+      btn.innerText = "Uploading...";
+
+      reader.onload = function(e) {
+        const payload = {
+          action: "uploadBill",
+          tripId: document.getElementById("bill-trip-id").value,
+          tripName: document.getElementById("bill-trip-name").value,
+          billName: document.getElementById("b-name").value,
+          purpose: document.getElementById("b-purpose").value,
+          amount: document.getElementById("b-amount").value,
+          fileName: file.name,
+          fileData: e.target.result
+        };
+
+        apiPost(payload).then(data => {
+          btn.innerText = "Upload & Save";
+          closeModal("upload-bill-modal");
+          showPopup("Bill Uploaded to Drive & Saved!");
+          fetchTrips();
+        }).catch(err => {
+          btn.innerText = "Upload & Save";
+          console.error("Error uploading bill:", err);
+        });
+      };
+
+      reader.readAsDataURL(file);
+    }
+
+    function openCloseTripModal(tripId, tripName) {
+      document.getElementById("close-trip-id").value = tripId;
+      document.getElementById("close-trip-name").value = tripName;
+      document.getElementById("close-trip-followups").value = "";
+      openModal("close-trip-modal");
+    }
+
+    function submitCloseTrip() {
+      const payload = {
+        action: "closeTrip",
+        tripId: document.getElementById("close-trip-id").value,
+        tripName: document.getElementById("close-trip-name").value,
+        followups: document.getElementById("close-trip-followups").value
+      };
+
+      apiPost(payload).then(data => {
+        closeModal("close-trip-modal");
+        showPopup("Trip Closed & Followup Tasks Generated!");
+        fetchTrips();
+      });
+    }
+
+    function openClaimTripModal(tripId) {
+      document.getElementById("claim-trip-id").value = tripId;
+      document.getElementById("claim-mail-link").value = "";
+      openModal("claim-trip-modal");
+    }
+
+    function submitClaimTrip() {
+      const payload = {
+        action: "claimTrip",
+        tripId: document.getElementById("claim-trip-id").value,
+        claimMailLink: document.getElementById("claim-mail-link").value
+      };
+
+      apiPost(payload).then(data => {
+        closeModal("claim-trip-modal");
+        showPopup("Trip Formally Claimed!");
+        fetchTrips();
+      });
+    }
+
+    // Export Excel Engine
     function exportExcel(tableID, filename) {
       const table = document.getElementById(tableID);
-      const wb = XLSX.utils.table_to_book(table, { sheet: "Sheet1" });
+      const wb = XLSX.utils.table_to_book(table, { sheet: "Report" });
       XLSX.writeFile(wb, `${filename}.xlsx`);
       showPopup("Excel File Downloaded!");
     }
