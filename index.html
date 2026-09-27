@@ -71,11 +71,8 @@
     .form-group input, .form-group select, .form-group textarea { width: 100%; }
 
     /* Toast Notification */
-    #toast { visibility: hidden; min-width: 250px; background-color: var(--neon-red); color: #fff; text-align: center; border-radius: 8px; padding: 14px; position: fixed; z-index: 2000; right: 30px; bottom: 30px; font-size: 0.95rem; box-shadow: 0 0 20px var(--neon-red-glow); transition: all 0.5s ease; }
-    #toast.show { visibility: visible; animation: fadein 0.5s, fadeout 0.5s 2.5s; }
-
-    @keyframes fadein { from { bottom: 0; opacity: 0; } to { bottom: 30px; opacity: 1; } }
-    @keyframes fadeout { from { bottom: 30px; opacity: 1; } to { bottom: 0; opacity: 0; } }
+    #toast { visibility: hidden; min-width: 250px; background-color: var(--neon-red); color: #fff; text-align: center; border-radius: 8px; padding: 14px; position: fixed; z-index: 2000; right: 30px; bottom: 30px; font-size: 0.95rem; box-shadow: 0 0 20px var(--neon-red-glow); transition: all 0.5s ease; opacity: 0; }
+    #toast.show { visibility: visible; opacity: 1; bottom: 30px; }
   </style>
 </head>
 <body>
@@ -323,19 +320,24 @@
   <!-- MAIN SCRIPT LOGIC -->
   <script>
     // PASTE YOUR GOOGLE APPS SCRIPT API EXEC URL HERE
-    const API_URL = "https://script.google.com/macros/s/AKfycbzNoKhYsKUfSswLElIsNcmuI1V9JYwNJJWR6aL0bfSYlIRs3TcX2AKFMEEKYLPquiXn/exec;
+    const API_URL = "https://script.google.com/macros/s/AKfycbzNoKhYsKUFsswLE1IsNcmuI1V9JYwNJJw_V1vJvS45E5oAit2mAtHhM4g7yU3S-253xg/exec";
 
     // In-memory data store for client-side filtering
     let rawTasks = [];
     let rawTrips = [];
     let rawBills = [];
 
-    // Toast Popup Trigger
+    // Fixed Toast Popup Trigger
     function showPopup(message) {
       const toast = document.getElementById("toast");
       toast.innerText = message;
       toast.className = "show";
-      setTimeout(() => { toast.className = toast.className.replace("show", ""); }, 3000);
+      
+      if (window.toastTimeout) clearTimeout(window.toastTimeout);
+      
+      window.toastTimeout = setTimeout(() => { 
+        toast.className = ""; 
+      }, 3000);
     }
 
     // Modal Display Controls
@@ -418,11 +420,15 @@
       const f3End = document.getElementById("task-f3-end").value;
 
       const filtered = rawTasks.filter(task => {
-        const createdDate = new Date(task['Date Created']);
-        const now = new Date();
-        
+        if (!task['Date Created']) return true;
+
+        const rawDateStr = String(task['Date Created']).split('T')[0];
+        const createdDate = new Date(rawDateStr);
+        const todayStr = new Date().toISOString().split('T')[0];
+        const now = new Date(todayStr);
+
         // F1 Timeframe
-        if (f1 === 'daily' && createdDate.toDateString() !== now.toDateString()) return false;
+        if (f1 === 'daily' && rawDateStr !== todayStr) return false;
         if (f1 === 'weekly' && (now - createdDate) > 7 * 24 * 60 * 60 * 1000) return false;
         if (f1 === 'monthly' && (createdDate.getMonth() !== now.getMonth() || createdDate.getFullYear() !== now.getFullYear())) return false;
 
@@ -430,8 +436,8 @@
         if (f2 !== 'all' && task['Status'] !== f2) return false;
 
         // F3 Range
-        if (f3Start && new Date(task['Date Created']) < new Date(f3Start)) return false;
-        if (f3End && new Date(task['Date Created']) > new Date(f3End)) return false;
+        if (f3Start && rawDateStr < f3Start) return false;
+        if (f3End && rawDateStr > f3End) return false;
 
         return true;
       });
@@ -456,7 +462,7 @@
             <td>${taskId}</td>
             <td>${task['Task Title'] || ''}</td>
             <td><span style="color:${task['Priority'] === 'P1' ? 'var(--neon-red)' : '#fff'}">${task['Priority'] || ''}</span></td>
-            <td>${task['Date Created'] ? new Date(task['Date Created']).toLocaleDateString() : ''}</td>
+            <td>${task['Date Created'] ? String(task['Date Created']).split('T')[0] : ''}</td>
             <td>${task['Assigned To'] || ''}</td>
             <td><strong style="color:${isClosed ? 'var(--text-muted)' : 'var(--neon-red)'}">${task['Status'] || ''}</strong></td>
             <td>
@@ -552,11 +558,15 @@
       const f3End = document.getElementById("trip-f3-end").value;
 
       const filteredTrips = rawTrips.filter(trip => {
-        const scheduledDate = new Date(trip['Scheduled Date']);
-        const now = new Date();
+        if (!trip['Scheduled Date']) return true;
+
+        const rawDateStr = String(trip['Scheduled Date']).split('T')[0];
+        const scheduledDate = new Date(rawDateStr);
+        const todayStr = new Date().toISOString().split('T')[0];
+        const now = new Date(todayStr);
 
         // F1 Timeframe
-        if (f1 === 'daily' && scheduledDate.toDateString() !== now.toDateString()) return false;
+        if (f1 === 'daily' && rawDateStr !== todayStr) return false;
         if (f1 === 'weekly' && (now - scheduledDate) > 7 * 24 * 60 * 60 * 1000) return false;
         if (f1 === 'monthly' && (scheduledDate.getMonth() !== now.getMonth() || scheduledDate.getFullYear() !== now.getFullYear())) return false;
 
@@ -564,8 +574,8 @@
         if (f2 !== 'all' && trip['Status'] !== f2) return false;
 
         // F3 Range
-        if (f3Start && new Date(trip['Scheduled Date']) < new Date(f3Start)) return false;
-        if (f3End && new Date(trip['Scheduled Date']) > new Date(f3End)) return false;
+        if (f3Start && rawDateStr < f3Start) return false;
+        if (f3End && rawDateStr > f3End) return false;
 
         return true;
       });
@@ -601,7 +611,7 @@
           <tr>
             <td>${tripId}</td>
             <td>${tripName || ''}</td>
-            <td>${trip['Scheduled Date'] ? new Date(trip['Scheduled Date']).toLocaleDateString() : ''}</td>
+            <td>${trip['Scheduled Date'] ? String(trip['Scheduled Date']).split('T')[0] : ''}</td>
             <td>${trip['Client Name'] || ''}</td>
             <td><strong style="color:${status === 'Claimed' ? '#00ff66' : status === 'Closed' ? 'var(--text-muted)' : 'var(--neon-red)'}">${status || ''}</strong></td>
             <td>
